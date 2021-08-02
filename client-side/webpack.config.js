@@ -8,7 +8,7 @@ module.exports = (angularWebpackConfig, options) => {
     const mfConfig = {
         output: {
           uniqueName: "import_export_atd",
-          publicPath: "http://localhost:65161/"
+          publicPath: "auto"
         },
         optimization: {
           // Only needed to bypass a temporary bug
