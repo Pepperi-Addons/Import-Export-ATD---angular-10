@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, Type, ViewChild } from "@angular/core";
+import { ChangeDetectorRef, Component, Input, OnInit, Type, ViewChild } from "@angular/core";
 import { TranslateService } from "@ngx-translate/core";
 // @ts-ignore
 import { UserService } from "pepperi-user-service";
@@ -78,6 +78,7 @@ export class ImportAtdComponent implements OnInit {
     @ViewChild("conflictslist") customConflictList: PepListComponent;
     @ViewChild("webhookslist") customWebhookList: PepListComponent;
     @ViewChild('pepSelect') pepSelect: PepSelectComponent;
+    @Input() hostObject: any;
 
     constructor(
         private dataConvertorService: PepDataConvertorService,
@@ -91,21 +92,13 @@ export class ImportAtdComponent implements OnInit {
         private cd: ChangeDetectorRef
 
     ) {
-        this.getActivityTypes();
         const browserCultureLang = translate.getBrowserCultureLang();
     }
 
-    getActivityTypes() {
-        this.activityTypes = [];
-        this.appService.getTypes((types: IPepOption[]) => {
-            if (types) {
-                types.sort((a, b) => a.value.localeCompare(b.value));
-                this.activityTypes = [...types];
-            }
-        });
-    }
+    ngOnInit() {
+        this.selectedActivity = this.hostObject.activityTypeDefinition.InternalID
 
-    ngOnInit() {}
+    }
 
     ngOnDestroy() {
         // if (this.reportInterval) {

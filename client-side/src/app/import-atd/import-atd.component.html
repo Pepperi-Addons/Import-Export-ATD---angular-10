@@ -11,15 +11,6 @@
               {{ "Import_Description" | translate }}
           </div>
           <div>
-              <pep-select #pepSelect
-                  [key]="'select1'"
-                  label="{{
-                      'Select_Activity_To_Import' | translate
-                  }}"
-                  [options]="activityTypes"
-                  (valueChange)="elementClicked($event)"
-              >
-              </pep-select>
               <pep-attachment
                   rowSpan="2"
                   [key]="'attachment1'"

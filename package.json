@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "cd ./server-side && npm run build && cd .. && cd ./client-side && npm run build:single-spa:client-side && cd ..",
+    "build": "cd ./client-side && npm run build:single-spa:client-side && cd .. && cd ./server-side && npm run build && cd ..",
     "init": "npm install && cd ./server-side && npm install && cd .. && cd ./client-side && npm i && cd ..",
     "publish-addon": "npm run build && publish-addon",
     "pub-addon": "publish-addon"
@@ -14,7 +14,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@pepperi-addons/papi-sdk": "^1.27.4",
+    "@pepperi-addons/papi-sdk": "^1.27.6",
     "@pepperi-addons/scripts": "^2.0.4",
     "@types/node-fetch": "^2.5.7",
     "again": "0.0.1"

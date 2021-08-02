@@ -1,21 +1,3 @@
 <div class="child1 child-container">
-    <pep-select #pepSelect
-        key="select1"
-        label="{{ 'Select_Activity_To_Export'  }}"
-        [options]="activityTypes"
-        (valueChange)="elementClicked($event)"
-    >
-    </pep-select>
-    <button
-        mat-button
-        pepButtonLoader
-        [disabled]="disableExportButton"
-        [finish]="isCallbackExportFinish"
-        [ignoreDisabledStyle]="false"
-        (click)="exportAtd()"
-        [ngClass]="{ disabled: disableExportButton }"
-        class="spacing-element pep-button md strong ellipsis pull-right flip"
-    >
-        {{ "Export_Button" }}
-    </button>
+   {{message}}
 </div>

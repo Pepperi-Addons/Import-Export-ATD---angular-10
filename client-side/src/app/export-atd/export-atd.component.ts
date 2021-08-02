@@ -1,9 +1,10 @@
-import { ChangeDetectorRef, Component, Input, OnInit, ViewChild } from "@angular/core";
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild } from "@angular/core";
 import { TranslateService } from "@ngx-translate/core";
 import { ObjectType } from "./../../../../models/ObjectType.enum";
 import {
     // PepHttpService,
-    PepAddonService, IPepOption } from "@pepperi-addons/ngx-lib";
+    PepAddonService, IPepOption, PepHttpService, PepLoaderService
+} from "@pepperi-addons/ngx-lib";
 import { AuditLog } from "@pepperi-addons/papi-sdk";
 import { PepDialogActionButton, PepDialogData, PepDialogService } from "@pepperi-addons/ngx-lib/dialog";
 import { AppService } from "../app.service";
@@ -23,24 +24,26 @@ export class ExportAtdComponent implements OnInit {
     selectedActivity: any;
     reportInterval = undefined;
     pluginUUID = `e9029d7f-af32-4b0e-a513-8d9ced6f8186`;
+    message: string;
     @ViewChild('pepSelect') pepSelect: PepSelectComponent;
-    @Input() options;
+    @Input() hostObject: any;
+    @Output() hostEvents: EventEmitter<any> = new EventEmitter<any>();
     atd;
 
 
     constructor(
         private translate: TranslateService,
-        private addonService: PepAddonService,
-        private dialogService: PepDialogService,
-        // private http: PepHttpService,
         private exportedService: ExportAtdService,
         private appService: AppService,
-        private cd: ChangeDetectorRef
+        private addonService: PepAddonService,
+        private loaderService: PepLoaderService
     ) {
-        this.getActivityTypes();
     }
+
     ngOnInit(): void {
-        this.atd = this.options?.atd;
+        this.selectedActivity = this.hostObject.activityTypeDefinition.InternalID
+        this.message = `About to export type defintion: ${this.hostObject.activityTypeDefinition.Name}. Please wait...`
+        this.exportAtd();
     }
 
 
@@ -50,31 +53,6 @@ export class ExportAtdComponent implements OnInit {
         }
     }
 
-    getActivityTypes() {
-        this.activityTypes = [];
-        this.appService.getTypes((types: IPepOption[]) => {
-            // this.getTypes((types: IPepOption[]) => {
-            if (types) {
-                types.sort((a, b) => a.value.localeCompare(b.value));
-                this.activityTypes = [...types];
-            }
-        });
-    }
-
-    elementClicked(event) {
-        // this.pepSelect.select['_overlayDir'].backdropClick.subscribe( ev => {
-        //     this.pepSelect.select.close();
-        //     this.cd.detectChanges();
-        // });
-          this.pepSelect.select.close();
-          this.cd.detectChanges();
-        this.selectedActivity = event.value;
-        if (event.value === "") {
-            this.disableExportButton = true;
-        } else {
-            this.disableExportButton = false;
-        }
-    }
 
     exportAtd() {
         this.isCallbackExportFinish = false;
@@ -82,6 +60,7 @@ export class ExportAtdComponent implements OnInit {
         let typeString = ``;
         this.exportedService.getTypeOfSubType(this.selectedActivity)
             .then(async (type) => {
+                this.loaderService.show();
                 if (type.Type === ObjectType.transactions) {
                     typeString = ObjectType.toString(ObjectType.transactions);
                 } else {
@@ -92,10 +71,11 @@ export class ExportAtdComponent implements OnInit {
                     this.selectedActivity
                 );
                 this.reportInterval = window.setInterval(() => {
-                    if (res?.URL){
+                    if (res?.URL) {
                         window.clearInterval(this.reportInterval);
                         this.isCallbackExportFinish = true;
                         this.data = res.URL;
+
                         this.appService.openDialog(
                             // this.openDialog(
                             this.translate.instant(
@@ -109,53 +89,66 @@ export class ExportAtdComponent implements OnInit {
                     }
                     else {
                         this.appService.getExecutionLog(res.ExecutionUUID)
-                        // this.getExecutionLog(res.ExecutionUUID)
-                        .then((logRes) => {
-                            if (
-                                logRes &&
-                                logRes.Status &&
-                                logRes.Status.Name !== "InProgress" &&
-                                logRes.Status.Name !== "InRetry"
-                            ) {
-                                window.clearInterval(this.reportInterval);
-                                const resultObj = JSON.parse(
-                                    logRes.AuditInfo.ResultObject
-                                );
-                                if (resultObj.URL) {
-                                    this.isCallbackExportFinish = true;
-                                    this.data = resultObj.URL;
-                                    this.appService.openDialog(
-                                        // this.openDialog(
-                                        this.translate.instant(
-                                            "Export_ATD_Dialog_Title"
-                                        ),
-                                        this.translate.instant(
-                                            "Export_ATD_Dialog_Success_Message"
-                                        ),
-                                        () => this.downloadUrl()
-                                    );
-                                } else if (resultObj.success == "Exception") {
-                                    this.isCallbackExportFinish = true;
+                            // this.getExecutionLog(res.ExecutionUUID)
+                            .then((logRes) => {
+                                if (
+                                    logRes &&
+                                    logRes.Status &&
+                                    logRes.Status.Name !== "InProgress" &&
+                                    logRes.Status.Name !== "InRetry"
+                                ) {
                                     window.clearInterval(this.reportInterval);
-                                    let error = JSON.parse(
-                                        resultObj.errorMessage.substring(
-                                            resultObj.errorMessage.indexOf("{")
-                                        )
-                                    ).fault.faultstring;
-                                    let contentError =
-                                        error && error != ""
-                                            ? error
-                                            : this.translate.instant(
-                                                  "Error_Occurred"
-                                              );
-                                    this.appService.openDialog(
-                                        // this.openDialog(
-                                        this.translate.instant("Error"),
-                                        contentError
+                                    const resultObj = JSON.parse(
+                                        logRes.AuditInfo.ResultObject
                                     );
+                                    if (resultObj.URL) {
+                                        this.isCallbackExportFinish = true;
+                                        this.data = resultObj.URL;
+                                        //this.hostEvents.emit({ closeDialog: true });
+                                        this.loaderService.hide();
+
+                                        this.message = this.translate.instant(
+                                            "Export_ATD_Dialog_Success_Message"
+                                        );
+                                        this.downloadUrl();
+                                        // this.appService.openDialog(
+                                        //     // this.openDialog(
+                                        //     this.translate.instant(
+                                        //         "Export_ATD_Dialog_Title"
+                                        //     ),
+                                        //     this.translate.instant(
+                                        //         "Export_ATD_Dialog_Success_Message"
+                                        //     ),
+                                        //     () => this.downloadUrl()
+                                        //);
+                                    } else if (resultObj.success == "Exception") {
+                                        
+                                        this.isCallbackExportFinish = true;
+                                        window.clearInterval(this.reportInterval);
+                                        //this.hostEvents.emit({ action: 'close-dialog' });
+                                        this.loaderService.hide();
+
+                                        this.message = `${this.translate.instant("Error_Occurred")}: ${resultObj.errorMessage}`;
+                                        let error = JSON.parse(
+                                            resultObj.errorMessage.substring(
+                                                resultObj.errorMessage.indexOf("{")
+                                            )
+                                        ).fault.faultstring;
+
+                                        let contentError =
+                                            error && error != ""
+                                                ? error
+                                                : this.translate.instant(
+                                                    "Error_Occurred"
+                                                );
+                                        this.appService.openDialog(
+                                            // this.openDialog(
+                                            this.translate.instant("Error"),
+                                            contentError
+                                        );
+                                    }
                                 }
-                            }
-                        });
+                            });
                     }
 
                 }, 1500);

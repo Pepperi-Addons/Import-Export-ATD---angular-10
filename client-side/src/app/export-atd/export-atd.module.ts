@@ -12,7 +12,7 @@ import { PepAddonService, PepCustomizationService, PepFileService, PepHttpServic
 import { MultiTranslateHttpLoader } from 'ngx-translate-multi-http-loader';
 import { PepDialogService } from '@pepperi-addons/ngx-lib/dialog';
 import { ExportAtdService } from '.';
-import { PepAddonLoaderService } from '@pepperi-addons/ngx-remote-loader';
+import {  PepAddonLoaderService } from '@pepperi-addons/ngx-remote-loader';
 import {config } from './addon.config';
 
 
@@ -23,8 +23,8 @@ export function createTranslateLoader(http: HttpClient, fileService: PepFileServ
     const addonPublicURL = addonService.getAddonPath(config.AddonUUID);
 
     return new MultiTranslateHttpLoader(http, [
-        {prefix: addonPublicURL, suffix: translationsSuffix},
-        {prefix: addonPublicURL, suffix: '.json'},
+        {prefix: addonPublicURL + translationsPrefix, suffix: translationsSuffix},
+        {prefix: addonPublicURL + 'assets/i18n/', suffix: '.json'},
     ]);
 }
 
