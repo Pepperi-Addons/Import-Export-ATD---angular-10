@@ -350,14 +350,14 @@ async function callImportOfAddons(service: MyService, type: string, subtype: str
   const relations = await service.papiClient.get(`/addons/data/relations?where=RelationName='ATDImport'`);
   for (const relation of relations) {
     try {
-      const data = addons.find(a => a.UUID == relation.AddonUUID)?.Data;
-      const body = {
-        Resource: type,
-        InternalID: subtype,
-        DataFromExport: data
-      }
-      const url = `/addons/api/${relation.AddonUUID}${relation.AddonRelativeURL}?resource=${type}&internal_id=${subtype}`
-      await service.papiClient.post(url, body);
+      // const data = addons.find(a => a.UUID == relation.AddonUUID)?.Data;
+      // const body = {
+      //   Resource: type,
+      //   InternalID: subtype,
+      //   DataFromExport: data
+      // }
+      // const url = `/addons/api/${relation.AddonUUID}${relation.AddonRelativeURL}?resource=${type}&internal_id=${subtype}`
+      // await service.papiClient.post(url, body);
     }
     catch (ex) {
       throw new Error(`Relation function: ${relation.AddonRelativeURL} failed.Addon UUID: ${relation.AddonUUID}. error: ${ex}`);

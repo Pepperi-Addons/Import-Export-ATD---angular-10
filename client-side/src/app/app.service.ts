@@ -43,7 +43,7 @@ export class AppService {
         functionName: string,
         options: any,
         isAsync: boolean
-    ) {
+    ) : Promise<any> {
         let exportAtdResult;
         if (isAsync) {
             exportAtdResult = await  this.papiClient.addons.api.uuid(this.pluginUUID).async()

@@ -1,3 +1,39 @@
-<div class="child1 child-container">
+<!-- <div class="child1 child-container">
+    
    {{message}}
+   <button
+   mat-button
+   pepButtonLoader
+   [disabled]="disableExportButton"
+   [finish]="isCallbackExportFinish"
+   [ignoreDisabledStyle]="false"
+   (click)="exportAtd()"
+   [ngClass]="{ disabled: disableExportButton }"
+   class="spacing-element pep-button md strong ellipsis pull-right flip"
+>
+   {{ "Export_Button" | translate }}
+</button>
+</div> -->
+
+<div class="child1 child-container">
+    <div
+        class="pep-spacing-element"
+        style="padding-bottom: 2rem; width: 100%"
+    >
+        {{message }}
+    </div>
+    <div>
+        <button
+        mat-button
+        pepButtonLoader
+        [disabled]="disableExportButton"
+        [finish]="isCallbackExportFinish"
+        [ignoreDisabledStyle]="false"
+        (click)="onCloseExportDialog()"
+        [ngClass]="{ disabled: disableExportButton }"
+        class="spacing-element pep-button md strong ellipsis pull-right flip"
+        >
+        {{ "Export_Close" | translate }}
+    </button>
+    </div>
 </div>

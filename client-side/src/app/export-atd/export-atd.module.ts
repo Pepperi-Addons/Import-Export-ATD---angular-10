@@ -33,7 +33,7 @@ export function createTranslateLoader(http: HttpClient, fileService: PepFileServ
   imports: [
     CommonModule,
     BrowserAnimationsModule,
-    // PepUIModule,
+    PepUIModule,
     MaterialModule,
     HttpClientModule,
     PepSelectModule,

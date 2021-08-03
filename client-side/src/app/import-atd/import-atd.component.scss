@@ -3,7 +3,10 @@
     //visibility: hidden;
 }
 .list-container {
+    min-width: 500px;
     max-width: 60rem;
+    height: auto;
+    width: 800px;
 }
 .buttons-container {
     display: flex;
