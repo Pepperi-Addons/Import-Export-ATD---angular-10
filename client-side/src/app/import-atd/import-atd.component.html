@@ -5,7 +5,7 @@
                 {{ "Import_Description" | translate }}
             </div>
             <div>
-                <pep-attachment rowSpan="2" [key]="'attachment1'" label="{{ 'Upload_ATD_File' | translate }}" (fileChange)="onFileSelect($event)">
+                <pep-attachment rowSpan="2" [key]="'attachment1'" label="{{ 'Upload_ATD_File' | translate }}" [disabled]="attachmentDisable" (fileChange)="onFileSelect($event)">
                 </pep-attachment>
                 <button (click)="importAtd()" pepButtonLoader [disabled]="disableImportButton" [ignoreDisabledStyle]="false" [finish]="isCallbackImportFinish" [ngClass]="{ disabled: disableImportButton }" class="spacing-element pep-button md strong ellipsis pull-right flip">
                     {{ "Import_Button" | translate }}

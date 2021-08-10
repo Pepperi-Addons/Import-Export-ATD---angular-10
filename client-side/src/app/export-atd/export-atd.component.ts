@@ -41,12 +41,16 @@ export class ExportAtdComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.selectedActivity = this.hostObject.activityTypeDefinition.InternalID
-        this.translate.get(['Export_Prepertion', "Export_PleaseWait"]).subscribe((res: string) => {
-            this.message = `${res['Export_Prepertion']} ${this.hostObject.activityTypeDefinition.Name}. ${res["Export_PleaseWait"]}`;
-            this.exportAtd();
+        const atdUUID = this.hostObject.objectList[0];
+        this.appService.papiClient.types.find({where: `UUID='${atdUUID}'`}).then((type)=>{
+            this.selectedActivity = type[0].InternalID;
+            this.translate.get(['Export_Prepertion', "Export_PleaseWait"]).subscribe((res: string) => {
+                this.message = `${res['Export_Prepertion']} ${type[0].Name}. ${res["Export_PleaseWait"]}`;
+                this.exportAtd();
+    
+            });
+        })
 
-        });
     }
 
 
@@ -82,10 +86,6 @@ export class ExportAtdComponent implements OnInit {
                         this.message = this.translate.instant(
                             "Export_ATD_Dialog_Success_Message"
                         );
-                        this.downloadUrl().then(()=>{
-                            window.clearInterval(this.reportInterval);
-
-                        })
                         // this.appService.openDialog(
                         //     this.translate.instant(
                         //         "Export_ATD_Dialog_Title"
@@ -124,16 +124,6 @@ export class ExportAtdComponent implements OnInit {
                                             window.clearInterval(this.reportInterval);
 
                                         })
-                                        // this.appService.openDialog(
-                                        //     // this.openDialog(
-                                        //     this.translate.instant(
-                                        //         "Export_ATD_Dialog_Title"
-                                        //     ),
-                                        //     this.translate.instant(
-                                        //         "Export_ATD_Dialog_Success_Message"
-                                        //     ),
-                                        //     () => this.downloadUrl()
-                                        // );
                                     } else if (resultObj.success == "Exception") {
 
                                         this.isCallbackExportFinish = true;
@@ -149,18 +139,6 @@ export class ExportAtdComponent implements OnInit {
                                                 resultObj.errorMessage.indexOf("{")
                                             )
                                         ).fault.faultstring;
-
-                                        // let contentError =
-                                        //     error && error != ""
-                                        //         ? error
-                                        //         : this.translate.instant(
-                                        //             "Error_Occurred"
-                                        //         );
-                                        // this.appService.openDialog(
-                                        //     // this.openDialog(
-                                        //     this.translate.instant("Error"),
-                                        //     contentError
-                                        // );
                                     }
                                 }
                             })

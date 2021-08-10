@@ -76,6 +76,8 @@ export class ImportAtdComponent implements OnInit {
     reportInterval = undefined;
     importResult = '';
     importFinished = false;
+    attachmentDisable = true;
+
     @ViewChild("conflictslist") customConflictList: PepListComponent;
     @ViewChild("webhookslist") customWebhookList: PepListComponent;
     @ViewChild('pepSelect') pepSelect: PepSelectComponent;
@@ -98,7 +100,12 @@ export class ImportAtdComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.selectedActivity = this.hostObject.activityTypeDefinition.InternalID
+        const atdUUID = this.hostObject.objectList[0];
+        this.appService.papiClient.types.find({ where: `UUID='${atdUUID}'` }).then((type) => {
+            this.selectedActivity = type[0].InternalID;
+            this.attachmentDisable = false;
+        });
+
     }
 
     ngOnDestroy() {
@@ -117,6 +124,10 @@ export class ImportAtdComponent implements OnInit {
             await this.callToImportATD();
             this.isCallbackConflictsFinish = true;
         }
+        this.disableCancelConflictButton = false;
+        this.isCallbackConflictsFinish = true;
+
+
     }
 
     private async hanleConflictsResolution() {
@@ -461,7 +472,17 @@ export class ImportAtdComponent implements OnInit {
     async onCancelClicked() {
         this.showConflictResolution = false;
         this.showWebhooksResolution = false;
+        this.disableCancelConflictButton = false;
+        this.disableCancelWebhooksButton = false;
+        this.disableConflictButton = false;
+        this.disableImportButton = true;
+        this.isCallbackWebhokksFinish = false;
+        this.isCallbackConflictsFinish = false;
+        this.isCallbackImportFinish = false;
+
+
     }
+
 
     selectedRowsChanged(selectedRowsCount) {
         const selectData = selectedRowsCount.componentRef.instance.getSelectedItemsData(
@@ -491,6 +512,7 @@ export class ImportAtdComponent implements OnInit {
     }
 
     async importAtd() {
+        this.disableConflictButton = false;
         this.isCallbackImportFinish = false;
         this.webhooks = [];
         try {
