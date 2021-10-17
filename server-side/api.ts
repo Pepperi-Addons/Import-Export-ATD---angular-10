@@ -1,6 +1,5 @@
-import MyService from "./my.service";
 import { Client, Request } from "@pepperi-addons/debug-server";
-import { DataView, ApiFieldObject, UserDefinedTableMetaData, ATDMetaData, Profile, FileStorage } from "@pepperi-addons/papi-sdk";
+import { DataView, ApiFieldObject, UserDefinedTableMetaData, ATDMetaData, FileStorage } from "@pepperi-addons/papi-sdk";
 import fetch from "node-fetch";
 import { ActivityTypeDefinition } from "../models/activityTypeDefinition";
 import { References, Mapping } from "../models/referencesMap";
@@ -14,13 +13,13 @@ import { WorkflowActionsWithRerefences } from "../models/workflowActionsWithRere
 import { ATDSettings } from "@pepperi-addons/papi-sdk";
 import * as config from "../addon.config.json";
 import { v4 as uuid } from 'uuid';
-import { exception } from "console";
+import ImportExportService from "./import-export-service";
 
 // #region export_atd
 
 export async function export_type_definition(client: Client, request: Request) {
   try {
-    const service = new MyService(client);
+    const service = new ImportExportService(client);
     const params = request.query;
     const type = params.type;
     const subtypeid = params.subtype;
@@ -32,24 +31,26 @@ export async function export_type_definition(client: Client, request: Request) {
     const url = await doExport(type, subtypeid, service, installedAddon.Version);
     return url;
   } catch (ex) {
-    throw new Error(ex);
+    const stringError = ex instanceof Error? ex.message:'failed in export type definition';
+    throw new Error(stringError);
   }
 }
 
-async function doExport(type: string, subtypeid: string, service: MyService, version?: string): Promise<any> {
+async function doExport(type: string, subtypeid: string, service: ImportExportService, version?: string): Promise<any> {
   const references: Reference[] = [];
   let atd = {} as ActivityTypeDefinition;
 
   const atdMetaData: ATDMetaData = await service.papiClient.metaData.type(type).types.subtype(subtypeid).get();
-  const dataViews: DataView[] = await service.papiClient.metaData.dataViews.find({
+  const dataViews: any[] = await service.papiClient.metaData.dataViews.find({
     where: `Context.Object.Resource='${type}' and Context.Object.InternalID=${subtypeid}`,
-  });
+  })
   const workflow = await service.papiClient.get(`/meta_data/${type}/types/${subtypeid}/workflow_legacy`);
   let fields: ApiFieldObject[] = await service.papiClient.metaData
     .type(type)
     .types.subtype(subtypeid)
     .fields.get({ include_owned: false, include_internal: true });
   fields = fields.filter((item) => item.FieldID.startsWith("TSA") || item.FieldID.startsWith("PSA"));
+  validateJSFormulaRuleEngine(fields);
 
   const settings: ATDSettings = await service.papiClient.metaData.type(type).types.subtype(subtypeid).settings.get();
 
@@ -61,6 +62,8 @@ async function doExport(type: string, subtypeid: string, service: MyService, ver
       .types.subtype(subtypeid)
       .fields.get({ include_owned: false, include_internal: true });
     linesFields = linesFields.filter((item) => item.FieldID.startsWith("TSA") || item.FieldID.startsWith("PSA"));
+    validateJSFormulaRuleEngine(linesFields);
+
   }
 
   addDataViewReferences(references, dataViews);
@@ -109,7 +112,7 @@ async function doExport(type: string, subtypeid: string, service: MyService, ver
   return { URL: presignedUrl.DownloadURL };
 }
 
-async function addExportOfAddonResult(service: MyService, type: string, subtype: string) {
+async function addExportOfAddonResult(service: ImportExportService, type: string, subtype: string) {
   let addonsData: any[] = [];
   const relations = await service.papiClient.get(`/addons/data/relations?where=RelationName='ATDExport'`);
   for (const relation of relations) {
@@ -127,7 +130,7 @@ async function addExportOfAddonResult(service: MyService, type: string, subtype:
 
 }
 
-async function addSettingsReferences(service: MyService, references: Reference[], settings: ATDSettings) {
+async function addSettingsReferences(service: ImportExportService, references: Reference[], settings: ATDSettings) {
   const accontsMetaData = await service.papiClient.metaData.type(`accounts`).types.get();
   const catalogs = await service.papiClient.get("/catalogs");
 
@@ -198,7 +201,7 @@ async function addSettingsReferences(service: MyService, references: Reference[]
   }
 }
 
-async function addFieldsReferences(service: MyService, references: Reference[], fields: ApiFieldObject[]) {
+async function addFieldsReferences(service: ImportExportService, references: Reference[], fields: ApiFieldObject[]) {
   for (const field of fields) {
     if (field.TypeSpecificFields || field.UserDefinedTableSource) {
       await addFieldReference(field, service, references);
@@ -206,7 +209,7 @@ async function addFieldsReferences(service: MyService, references: Reference[], 
   }
 }
 
-async function addFieldReference(field: ApiFieldObject, service: MyService, references: Reference[]) {
+async function addFieldReference(field: ApiFieldObject, service: ImportExportService, references: Reference[]) {
   if (field.TypeSpecificFields?.ReferenceToResourceType != null) {
     const referenceId = field.TypeSpecificFields.ReferenceToResourceType.ID;
     if (ObjectType.values().indexOf(referenceId) > -1) {
@@ -260,7 +263,7 @@ function addDataViewReferences(references: Reference[], data_views: DataView[]) 
   });
 }
 
-async function addWorkflowReferences(service: MyService, references: Reference[], workflow: any) {
+async function addWorkflowReferences(service: ImportExportService, references: Reference[], workflow: any) {
   const workflowReferences = workflow.WorkflowReferences;
   for (let workflowReference of workflowReferences) {
     const reference: Reference = {
@@ -304,7 +307,7 @@ export async function import_type_definition(client: Client, request: Request) {
   const body = request.body;
   const map: References = body.References;
   const url: string = body.URL;
-  const service = new MyService(client);
+  const service = new ImportExportService(client);
   request.method = "POST";
   let subTypeSent = subtypeid;
 
@@ -329,7 +332,7 @@ export async function import_type_definition(client: Client, request: Request) {
   }
 }
 
-async function HandleFailure(subTypeSent: any, subtypeid: any, service: MyService, type: any, backupAtd: any, atd: ActivityTypeDefinition) {
+async function HandleFailure(subTypeSent: any, subtypeid: any, service: ImportExportService, type: any, backupAtd: any, atd: ActivityTypeDefinition) {
   if (!subTypeSent) {
     await deleteATD(subtypeid, service, type);
   } else if (backupAtd) {
@@ -337,7 +340,7 @@ async function HandleFailure(subTypeSent: any, subtypeid: any, service: MyServic
   }
 }
 
-async function deleteATD(subtypeid: any, service: MyService, type: any) {
+async function deleteATD(subtypeid: any, service: ImportExportService, type: any) {
   const atdToDelete = {
     InternalID: subtypeid,
     Hidden: true,
@@ -345,7 +348,7 @@ async function deleteATD(subtypeid: any, service: MyService, type: any) {
   await service.papiClient.post(`/meta_data/${type}/types`, atdToDelete);
 }
 
-async function callImportOfAddons(service: MyService, type: string, subtype: string, addons: AddonOwner[]) {
+async function callImportOfAddons(service: ImportExportService, type: string, subtype: string, addons: AddonOwner[]) {
 
   const relations = await service.papiClient.get(`/addons/data/relations?where=RelationName='ATDImport'`);
   for (const relation of relations) {
@@ -365,7 +368,7 @@ async function callImportOfAddons(service: MyService, type: string, subtype: str
   }
 }
 
-async function doImport(type: string, subtypeid: string, map: References | null, service: MyService, atd: ActivityTypeDefinition): Promise<void> {
+async function doImport(type: string, subtypeid: string, map: References | null, service: ImportExportService, atd: ActivityTypeDefinition): Promise<void> {
   console.log(`start import ATD: ${subtypeid}`);
   ValidateImportAndExportTypes(atd, type);
 
@@ -417,7 +420,7 @@ function ValidateImportAndExportTypes(atd: ActivityTypeDefinition, type: string)
   }
 }
 
-async function convertFileToATD(url: string, atd: ActivityTypeDefinition, subtypeid: string, service: MyService, type: string) {
+async function convertFileToATD(url: string, atd: ActivityTypeDefinition, subtypeid: string, service: ImportExportService, type: string) {
   await fetch(url, {
     method: `GET`,
   })
@@ -450,7 +453,7 @@ function upsertPreparation(atd: ActivityTypeDefinition, subtypeid: string) {
   });
 }
 
-async function CreateATD(data: any, service: MyService, type: string): Promise<string> {
+async function CreateATD(data: any, service: ImportExportService, type: string): Promise<string> {
   const atdToInsert = {
     ExternalID: `${data.ExternalID} (${+new Date()})`,
     Description: `${data.Description}`,
@@ -463,7 +466,7 @@ async function CreateATD(data: any, service: MyService, type: string): Promise<s
   return atd.InternalID;
 }
 
-async function UpdateDescriptionATD(data: any, service: MyService, type: string, subtype: string): Promise<void> {
+async function UpdateDescriptionATD(data: any, service: ImportExportService, type: string, subtype: string): Promise<void> {
   const atdToUpdate = {
     InternalID: `${subtype}`,
     Description: `${data.Description}`,
@@ -471,7 +474,7 @@ async function UpdateDescriptionATD(data: any, service: MyService, type: string,
   await service.papiClient.post(`/meta_data/${type}/types`, atdToUpdate);
 }
 
-async function updateATDDescription(service: MyService, description: string, type: string, subtypeid: string): Promise<void> {
+async function updateATDDescription(service: ImportExportService, description: string, type: string, subtypeid: string): Promise<void> {
   const atdToInsert = {
     InternalID: subtypeid,
     Description: description,
@@ -479,34 +482,37 @@ async function updateATDDescription(service: MyService, description: string, typ
   await service.papiClient.post(`/meta_data/${type}/types`, atdToInsert);
 }
 
-async function upsertSettings(service: MyService, type: string, subtype: string, settings: ATDSettings): Promise<void> {
+async function upsertSettings(service: ImportExportService, type: string, subtype: string, settings: ATDSettings): Promise<void> {
   try {
     await service.papiClient.metaData.type(type).types.subtype(subtype).settings.update(settings);
     console.log(`post settings succeeded`);
   } catch (err) {
     console.error(`post settings failed. the error: ${err}, the body: ${JSON.stringify(settings)}`);
+    const stringError = err instanceof Error? `${JSON.parse(err.message.substring(err.message.indexOf("{"))).fault.faultstring}` :`unknown error`
     throw new Error(
-      `Post settings of type definition: ${subtype} failed. Error: ${JSON.parse(err.message.substring(err.message.indexOf("{"))).fault.faultstring}`
+      `Post settings of type definition: ${subtype} failed. Error: ${stringError}`
     );
   }
 }
 
-async function upsertWorkflow(service: MyService, workflow: any, type: string, subtype: string): Promise<void> {
+async function upsertWorkflow(service: ImportExportService, workflow: any, type: string, subtype: string): Promise<void> {
   try {
     await service.papiClient.post(`/meta_data/${type}/types/${subtype}/workflow_legacy`, workflow);
     console.log(`post workflow succeeded`);
   } catch (err) {
     console.error(`post Workflow failed`, `type: ${type}`, `subtype: ${subtype}`, `body: ${JSON.stringify(workflow)}`);
+    const stringError = err instanceof Error? `${JSON.parse(err.message.substring(err.message.indexOf("{"))).fault.faultstring}` :`unknown error`
+
     throw new Error(
-      `Post workflow of type definition: ${subtype} failed. Error: ${JSON.parse(err.message.substring(err.message.indexOf("{"))).fault.faultstring}`
+      `Post workflow of type definition: ${subtype} failed. Error: ${stringError}`
     );
   }
 }
 
-async function upsertDataViews(service: MyService, dataViews: DataView[], type: string, subtype: string): Promise<boolean> {
+async function upsertDataViews(service: ImportExportService, dataViews: DataView[], type: string, subtype: string): Promise<boolean> {
   const body = dataViews;
   try {
-    let currentDataViews = await service.papiClient.metaData.dataViews.find({
+    let currentDataViews:any[] = await service.papiClient.metaData.dataViews.find({
       where: `Context.Object.Resource='${type}' and Context.Object.InternalID=${subtype}`,
     });
 
@@ -538,11 +544,11 @@ async function upsertDataViews(service: MyService, dataViews: DataView[], type: 
     return true;
   } catch (err) {
     console.error(`Post of data views failed. Error: ${err}, body: ${JSON.stringify(body)}`);
-    throw new Error(`Post of data views failed. Error: ${err.message}`);
+    throw new Error(`Post of data views failed. Error: ${err instanceof Error ? err.message: 'unknown error'}`);
   }
 }
 
-async function upsertFields(service: MyService, fields: ApiFieldObject[], type: string, subtype: string): Promise<void> {
+async function upsertFields(service: ImportExportService, fields: ApiFieldObject[], type: string, subtype: string): Promise<void> {
   try {
     fields = fields.filter((item) => item.FieldID.startsWith("TSA") || item.FieldID.startsWith("PSA"));
 
@@ -574,7 +580,8 @@ async function upsertFields(service: MyService, fields: ApiFieldObject[], type: 
     console.log(`post fields batch succeeded`);
   } catch (err) {
     console.error(`Post fields failed. error: ${err}, the body: ${JSON.stringify(fields)}`);
-    throw new Error(`Post fields failed. Error: ${JSON.parse(err.message.substring(err.message.indexOf("{"))).fault.faultstring}`);
+    const stringError = err instanceof Error? `${JSON.parse(err.message.substring(err.message.indexOf("{"))).fault.faultstring}` :`unknown error`
+    throw new Error(`Post fields failed. Error: ${stringError}`);
   }
   // fields.forEach(async (field) => {
   //     try {
@@ -610,11 +617,11 @@ function compareNumberFieldsBeforeAndAfter(deletedFields: any, fieldsToDelete: A
   }
 }
 
-async function upsertHiddenFields(service: MyService, type: string, subtype: string, fieldsToDelete: ApiFieldObject[]) {
+async function upsertHiddenFields(service: ImportExportService, type: string, subtype: string, fieldsToDelete: ApiFieldObject[]) {
   return await service.papiClient.post(`/meta_data/bulk/${type}/types/${subtype}/fields`, fieldsToDelete);
 }
 
-function fixSettingsReferences(service: MyService, settings: ATDSettings, map: References): boolean {
+function fixSettingsReferences(service: ImportExportService, settings: ATDSettings, map: References): boolean {
   try {
     let accountIds = settings.OriginAccountsData?.IDs?.slice();
     if (accountIds) {
@@ -865,7 +872,7 @@ export async function upsert_to_dynamo(client: Client, request: Request) {
   const body = request.body;
   request.method = "POST";
 
-  const service = new MyService(client);
+  const service = new ImportExportService(client);
   const hedears = {};
   hedears["X-Pepperi-SecretKey"] = client.AddonSecretKey;
   hedears["X-Pepperi-OwnerID"] = client.AddonUUID;
@@ -880,7 +887,7 @@ export async function get_from_dynamo(client: Client, request: Request) {
   const key = params.key;
   request.method = "GET";
 
-  const service = new MyService(client);
+  const service = new ImportExportService(client);
   const hedears = {};
   hedears["X-Pepperi-SecretKey"] = client.AddonSecretKey;
   hedears["X-Pepperi-OwnerID"] = client.AddonUUID;
@@ -894,7 +901,7 @@ export async function get_from_dynamo(client: Client, request: Request) {
 
 //#region build references map
 export async function build_references_mapping(client: Client, request: Request) {
-  const service = new MyService(client);
+  const service = new ImportExportService(client);
   const params = request.query;
   const subtype = params.subtype;
   const referencesMap = {} as References;
@@ -1031,7 +1038,7 @@ function addReferencesPair(element: any, ref: Reference, referencesMap: Referenc
   referencesMap.Mapping.push(pair);
 }
 
-async function GetReferencesData(service: MyService, subtype: string, exportReferences: Reference[]): Promise<any> {
+async function GetReferencesData(service: ImportExportService, subtype: string, exportReferences: Reference[]): Promise<any> {
   const profileIndex = exportReferences.findIndex((ref) => ref.Type === "profile");
   const genericListIndex = exportReferences.findIndex((ref) => ref.Type === "list");
   const fileNames = exportReferences.filter((ref) => ref.Type === "file_storage")?.map((f) => f.Name);
@@ -1107,7 +1114,7 @@ async function GetReferencesData(service: MyService, subtype: string, exportRefe
   return referencesData;
 }
 
-async function getReferencesMetaDataGenericListByUUIDS(service: MyService, uuids: string[], names: string[], type: string) {
+async function getReferencesMetaDataGenericListByUUIDS(service: ImportExportService, uuids: string[], names: string[], type: string) {
   uuids.forEach((x) => x === `'${x}'`);
   names.forEach((x) => x === `'${x}'`);
 
@@ -1117,4 +1124,16 @@ async function getReferencesMetaDataGenericListByUUIDS(service: MyService, uuids
   return await service.papiClient.get(`/meta_data/lists/${type}?where=UUID IN ('${whereClauseOfUUIDs}') OR Name IN ('${whereClauseOfNames}')`);
 }
 
+function validateJSFormulaRuleEngine(fields: ApiFieldObject[]) {
+  const fieldsToFix: string[] = [];
+  const fieldsWithRuleEngine = fields.filter((f) => f.CalculatedRuleEngine != null && f.CalculatedRuleEngine.JSFormula);
+  fieldsWithRuleEngine.forEach((field) => {
+      if (field.CalculatedRuleEngine.JSFormula.indexOf('return') == -1 && field.FieldID.startsWith('TSA')) {
+          fieldsToFix.push(field.FieldID);
+      }
+  });
+  if (fieldsToFix.length > 0) {
+      throw new Error(`The following fields: ${fieldsToFix.join(',')} must contain a 'return' statement`);
+  }
+}
 //#endregion

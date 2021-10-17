@@ -8,6 +8,7 @@ The erroeMessage is importent! it will be written in the audit log and help the 
 */
 
 import { PapiClient, Relation } from "@pepperi-addons/papi-sdk";
+import { execPath } from "process";
 import { relations } from "./metadata";
 import MyService from "./my.service";
 
@@ -49,7 +50,7 @@ exports.install = async (Client, Request) => {
   } catch (e) {
     return {
       success: false,
-      erroeMessage: JSON.stringify(e),
+      erroeMessage: e,
     };
   }
 };
@@ -59,7 +60,7 @@ exports.uninstall = async (Client, Request) => {
   try {
     const service = new MyService(Client);
     const myClonedObject = JSON.parse(JSON.stringify(relations));
-    const hiddenRelation = myClonedObject.map((relation:Relation) => {
+    const hiddenRelation = myClonedObject.map((relation: Relation) => {
       relation.Hidden = true;
       return relation;
     })
@@ -75,18 +76,15 @@ exports.uninstall = async (Client, Request) => {
 };
 
 exports.upgrade = async (Client, Request) => {
+
   try {
     const service = new MyService(Client);
-    await upsertRelations(service.papiClient, relations);
-    return { success: true };
+    var res = await upsertRelations(service.papiClient, relations);
+    return { success: res.success, errorMessage: res.errorMessage ?? 'Unknown Error Occured' };
   }
   catch (e) {
-    return {
-      success: false,
-      erroeMessage: JSON.stringify(e),
-    };
+    return { success: false, errorMessage: e };
   }
-
 };
 
 exports.downgrade = async (Client, Request) => {
@@ -105,10 +103,7 @@ async function upsertRelations(papiClient: PapiClient, relations) {
     }
   }
   catch (err) {
-    return {
-      success: false,
-      errorMessage: ('message' in err) ? err.message : 'Unknown Error Occured',
-    }
+    throw err;
   }
 }
 

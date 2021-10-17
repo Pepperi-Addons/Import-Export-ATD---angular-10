@@ -42,12 +42,12 @@ export class ExportAtdComponent implements OnInit {
 
     ngOnInit(): void {
         const atdUUID = this.hostObject.objectList[0];
-        this.appService.papiClient.types.find({where: `UUID='${atdUUID}'`}).then((type)=>{
+        this.appService.papiClient.types.find({ where: `UUID='${atdUUID}'` }).then((type) => {
             this.selectedActivity = type[0].InternalID;
             this.translate.get(['Export_Prepertion', "Export_PleaseWait"]).subscribe((res: string) => {
                 this.message = `${res['Export_Prepertion']} ${type[0].Name}. ${res["Export_PleaseWait"]}`;
                 this.exportAtd();
-    
+
             });
         })
 
@@ -79,6 +79,7 @@ export class ExportAtdComponent implements OnInit {
                 );
                 this.reportInterval = window.setInterval(() => {
                     if (res?.URL) {
+                        window.clearInterval(this.reportInterval);
                         this.isCallbackExportFinish = true;
                         this.data = res.URL;
                         this.disableExportButton = false;
@@ -106,7 +107,7 @@ export class ExportAtdComponent implements OnInit {
                                     logRes.Status.Name !== "InProgress" &&
                                     logRes.Status.Name !== "InRetry"
                                 ) {
-                                    //window.clearInterval(this.reportInterval);
+                                    window.clearInterval(this.reportInterval);
                                     const resultObj = JSON.parse(
                                         logRes.AuditInfo.ResultObject
                                     );
@@ -120,10 +121,9 @@ export class ExportAtdComponent implements OnInit {
                                         this.message = this.translate.instant(
                                             "Export_ATD_Dialog_Success_Message"
                                         );
-                                        this.downloadUrl().then(()=>{
-                                            window.clearInterval(this.reportInterval);
+                                        //window.clearInterval(this.reportInterval);
 
-                                        })
+                                        this.downloadUrl();
                                     } else if (resultObj.success == "Exception") {
 
                                         this.isCallbackExportFinish = true;
@@ -152,7 +152,7 @@ export class ExportAtdComponent implements OnInit {
     }
 
     downloadUrl() {
-        return fetch(this.data, { method: `GET` })
+        fetch(this.data, { method: `GET` })
             .then((response) => response.json())
             .then((data) => {
                 var fileContents = JSON.stringify(data);

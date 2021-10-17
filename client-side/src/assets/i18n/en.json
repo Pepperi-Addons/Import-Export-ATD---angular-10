@@ -41,7 +41,7 @@
     "Select_Activity_To_Export": "Select an activity to export",
     "Import_Type_Definition_Title": "Import type definition",
     "Export_Type_Definition_Title": "Export type definition",
-    "Upload_ATD_File": "Upload type definition file",
+    "Upload_ATD_File": "Select an export file",
     "Import_Description": "This process overwrites the current transaction with the content from an export file.",
     "Profile": "Profile",
     "List": "List",
@@ -55,3 +55,4 @@
     "TransactionType": "Transaction type",
     "ActivityType": "Activity type"
 }
+

@@ -63,7 +63,6 @@ export class ImportAtdComponent implements OnInit {
     disableCancelConflictButton: boolean = false;
     disableCancelWebhooksButton: boolean = false;
     value = "";
-    viewType: PepListViewType = "table";
     colorType: PepColorType = "any";
     conflictsList: Conflict[] = [];
     webhooks: Webhook[] = [];
@@ -999,10 +998,7 @@ export class ImportAtdComponent implements OnInit {
                 this.customConflictList.initListData(
                     uiControl,
                     rows.length,
-                    rows,
-                    this.viewType,
-                    "",
-                    true
+                    rows
                 );
             }
         }
@@ -1161,10 +1157,8 @@ export class ImportAtdComponent implements OnInit {
                 this.customWebhookList.initListData(
                     uiControl,
                     rows.length,
-                    rows,
-                    this.viewType,
-                    "",
-                    true
+                    rows
+
                 );
             }
         }

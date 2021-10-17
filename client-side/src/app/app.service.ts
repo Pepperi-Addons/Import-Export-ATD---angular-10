@@ -24,7 +24,7 @@ export class AppService {
             baseURL: this.papiBaseURL,
             token: this.sessionService.getIdpToken(),
             addonUUID: this.pluginUUID,
-            suppressLogging:true
+            suppressLogging: true
         })
     }
     constructor(
@@ -43,15 +43,15 @@ export class AppService {
         functionName: string,
         options: any,
         isAsync: boolean
-    ) : Promise<any> {
+    ): Promise<any> {
         let exportAtdResult;
         if (isAsync) {
-            exportAtdResult = await  this.papiClient.addons.api.uuid(this.pluginUUID).async()
-                                .file(fileName).func(functionName).get(options.params);
+            exportAtdResult = await this.papiClient.addons.api.uuid(this.pluginUUID).async()
+                .file(fileName).func(functionName).get(options.params);
 
         } else {
-            exportAtdResult = await  this.papiClient.addons.api.uuid(this.pluginUUID)
-            .file(fileName).func(functionName).get(options.params);
+            exportAtdResult = await this.papiClient.addons.api.uuid(this.pluginUUID)
+                .file(fileName).func(functionName).get(options.params);
         }
 
 
@@ -87,13 +87,13 @@ export class AppService {
         // options = { ...httpOptions, ...options };
         let exportAtdResult: Promise<any>;
         if (isAsync) {
-            exportAtdResult = await  this.papiClient.addons.api.uuid(this.pluginUUID).async()
-            .file(fileName).func(functionName).post(options.params, body).then(res =>  res).catch(e => { debugger });
+            exportAtdResult = await this.papiClient.addons.api.uuid(this.pluginUUID).async()
+                .file(fileName).func(functionName).post(options.params, body).then(res => res).catch(e => { debugger });
 
 
         } else {
-            exportAtdResult = await  this.papiClient.addons.api.uuid(this.pluginUUID)
-            .file(fileName).func(functionName).post(options.params, body).then(res =>  res).catch(e => { debugger });
+            exportAtdResult = await this.papiClient.addons.api.uuid(this.pluginUUID)
+                .file(fileName).func(functionName).post(options.params, body).then(res => res).catch(e => { debugger });
 
         }
 
@@ -114,17 +114,22 @@ export class AppService {
             title: "OK",
             className: "",
             callback: callback,
-        };
 
+        };
+        const dialogConfig = this.dialogService.getDialogConfig({ disableClose: true, panelClass: 'pepperi-standalone' }, 'inline')
+        //dialogConfig.minWidth = '30px';
         const dialogData = new PepDialogData({
             title: title,
             content: content,
             actionButtons: [actionButton],
             actionsType: "custom",
             showClose: false,
+
         });
-        this.dialogService.openDefaultDialog(dialogData);
+        this.dialogService.openDefaultDialog(dialogData, dialogConfig);
     }
+
+
 
     async getExecutionLog(executionUUID): Promise<AuditLog> {
         return this.getPapiCall(`/audit_logs/${executionUUID}`);
