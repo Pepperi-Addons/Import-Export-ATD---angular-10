@@ -881,7 +881,6 @@ export class ImportAtdComponent implements OnInit {
     }
 
     notifyValueChanged(event) {
-        debugger;
         if (this.showConflictResolution) {
             let objectOndex = this.conflictsList.findIndex(
                 (x) => x.UUID === event.id
@@ -953,10 +952,7 @@ export class ImportAtdComponent implements OnInit {
                 this.customConflictList.initListData(
                     uiControl,
                     rows.length,
-                    rows,
-                    this.viewType,
-                    "",
-                    true
+                    rows
                 );
             }
         }
@@ -1109,10 +1105,7 @@ export class ImportAtdComponent implements OnInit {
                 this.customWebhookList.initListData(
                     uiControl,
                     rows.length,
-                    rows,
-                    this.viewType,
-                    "",
-                    true
+                    rows
                 );
             }
         }

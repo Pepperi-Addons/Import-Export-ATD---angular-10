@@ -77,6 +77,7 @@
                     [selectionTypeForActions]="'none'"
                     [noDataFoundMsg]="'No data'"
                     [parentScroll]="conflictslistContainer"
+                    [viewType]="viewType"
                     (valueChange)="notifyValueChanged($event)"
                 >
                 </pep-list>
@@ -122,6 +123,7 @@
                     [supportResizing]="true"
                     [selectionTypeForActions]="'none'"
                     [noDataFoundMsg]="'No data'"
+                    [viewType]="viewType"
                     [parentScroll]="webhookslistContainer"
                     (valueChange)="notifyValueChanged($event)"
                 >
