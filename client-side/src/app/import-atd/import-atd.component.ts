@@ -1,4 +1,4 @@
-import { Component, OnInit, Type, ViewChild } from "@angular/core";
+import { ChangeDetectorRef, Component, OnInit, Type, ViewChild } from "@angular/core";
 import { TranslateService } from "@ngx-translate/core";
 // @ts-ignore
 import { UserService } from "pepperi-user-service";
@@ -86,7 +86,8 @@ export class ImportAtdComponent implements OnInit {
         private customizationService: PepCustomizationService,
         private httpService: PepHttpService,
         private addonService: PepAddonService,
-        private importedService: ImportAtdService
+        private importedService: ImportAtdService,
+        private cd: ChangeDetectorRef
     ) {
         this.getActivityTypes();
         const browserCultureLang = translate.getBrowserCultureLang();
@@ -807,11 +808,38 @@ export class ImportAtdComponent implements OnInit {
         }
     }
 
+    // onFileSelect(event) {
+    //     let fileObj = event?.fileStr;
+    //     if (fileObj?.length > 0) {
+    //         const file = JSON.parse(fileObj);
+    //         const blob = new Blob([file.fileStr], { type: file.fileExt });
+    //         var fileReader = new FileReader();
+    //         fileReader.readAsDataURL(blob);
+    //         fileReader.onload = (e) => {
+    //             if (this.selectedActivity) {
+    //                 this.disableImportButton = false;
+    //             }
+    //             this.importedService.exportedAtdstring = decodeURIComponent(
+    //                 escape(
+    //                     window.atob(file.fileStr.split(";")[1].split(",")[1])
+    //                 )
+    //             );
+
+    //             this.importedService.exportedAtd = JSON.parse(
+    //                 this.importedService.exportedAtdstring
+    //             );
+    //         };
+    //     } else {
+    //         this.disableImportButton = true;
+    //     }
+    // }
+
     onFileSelect(event) {
-        let fileObj = event?.fileStr;
-        if (fileObj?.length > 0) {
-            const file = JSON.parse(fileObj);
-            const blob = new Blob([file.fileStr], { type: file.fileExt });
+        this.cd.detectChanges();
+        let fileStr = event?.fileStr;
+        if (fileStr && fileStr.length > 0) {
+            //const file = JSON.parse(fileObj);
+            const blob = new Blob([fileStr], { type: event.fileExt });
             var fileReader = new FileReader();
             fileReader.readAsDataURL(blob);
             fileReader.onload = (e) => {
@@ -820,7 +848,7 @@ export class ImportAtdComponent implements OnInit {
                 }
                 this.importedService.exportedAtdstring = decodeURIComponent(
                     escape(
-                        window.atob(file.fileStr.split(";")[1].split(",")[1])
+                        window.atob(fileStr.split(";")[1].split(",")[1])
                     )
                 );
 
@@ -832,7 +860,6 @@ export class ImportAtdComponent implements OnInit {
             this.disableImportButton = true;
         }
     }
-
     async fileToBase64(filename, filepath) {
         const response = await fetch(filepath);
         if (response.status != 200) {
