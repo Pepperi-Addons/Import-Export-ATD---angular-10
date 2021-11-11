@@ -35,12 +35,7 @@
                             {
                                 "glob": "**/*",
                                 "input": "node_modules/@pepperi-addons/ngx-lib/src/assets",
-                                "output": "./"
-                            },
-                            {
-                                "glob": "**/*",
-                                "input": "./assets/i18n",
-                                "output": "./"
+                                "output": "./assets/ngx-lib"
                             }
                         ],
                         "scripts": [],
