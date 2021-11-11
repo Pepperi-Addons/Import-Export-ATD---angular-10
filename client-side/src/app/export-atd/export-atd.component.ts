@@ -71,9 +71,9 @@ export class ExportAtdComponent implements OnInit {
         });
     }
 
-    elementClicked(event) {
-        this.selectedActivity = event.value;
-        if (event.value === "") {
+    elementClicked(value) {
+        this.selectedActivity = value;
+        if (value === "") {
             this.disableExportButton = true;
         } else {
             this.disableExportButton = false;

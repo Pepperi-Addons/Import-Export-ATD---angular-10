@@ -808,8 +808,8 @@ export class ImportAtdComponent implements OnInit {
     }
 
     onFileSelect(event) {
-        let fileObj = event.value;
-        if (fileObj.length > 0) {
+        let fileObj = event?.fileStr;
+        if (fileObj?.length > 0) {
             const file = JSON.parse(fileObj);
             const blob = new Blob([file.fileStr], { type: file.fileExt });
             var fileReader = new FileReader();
@@ -871,9 +871,9 @@ export class ImportAtdComponent implements OnInit {
         // }
     }
 
-    elementClicked(event) {
-        this.selectedActivity = event.value;
-        if (event.value === "") {
+    elementClicked(value) {
+        this.selectedActivity = value;
+        if (value === "") {
             this.disableImportButton = true;
         } else if (this.importedService.exportedAtdstring) {
             this.disableImportButton = false;
