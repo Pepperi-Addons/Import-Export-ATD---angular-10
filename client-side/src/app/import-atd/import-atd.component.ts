@@ -76,7 +76,7 @@ export class ImportAtdComponent implements OnInit {
     importResult = '';
     importFinished = false;
     attachmentDisable = true;
-
+    isCallbackConflictsFinished = false;
     @ViewChild("conflictslist") customConflictList: PepListComponent;
     @ViewChild("webhookslist") customWebhookList: PepListComponent;
     @ViewChild('pepSelect') pepSelect: PepSelectComponent;
@@ -118,12 +118,13 @@ export class ImportAtdComponent implements OnInit {
         this.isCallbackConflictsFinish = false;
         if (this.webhooks.length > 0) {
             this.showWebhooks();
+            this.disableCancelConflictButton = false;
             this.isCallbackConflictsFinish = false;
         } else {
             await this.callToImportATD();
             this.isCallbackConflictsFinish = true;
         }
-        this.disableCancelConflictButton = false;
+        //this.disableCancelConflictButton = false;
         this.isCallbackConflictsFinish = true;
 
 
@@ -360,6 +361,7 @@ export class ImportAtdComponent implements OnInit {
     }
 
     private async callToImportATD() {
+        this.isCallbackImportFinish = false;
         await this.hanleConflictsResolution();
         const presignedUrl = await this.importService.callToPapi("POST", `/file_storage/tmp`);
         await fetch(presignedUrl.UploadURL, { method: `PUT`, body: this.importService.exportedAtdstring });
@@ -389,17 +391,18 @@ export class ImportAtdComponent implements OnInit {
         const resultObj = JSON.parse(
             logRes.AuditInfo.ResultObject
         );
-        if (!this.isCallbackWebhokksFinish) {
-            this.isCallbackWebhokksFinish = true;
-        }
-        if (!this.isCallbackConflictsFinish) {
-            this.isCallbackConflictsFinish = true;
-        }
-        if (!this.isCallbackImportFinish) {
-            this.isCallbackImportFinish = true;
-        }
+        // if (!this.isCallbackWebhokksFinish) {
+        //     this.isCallbackWebhokksFinish = true;
+        // }
+        // if (!this.isCallbackConflictsFinish) {
+        //     this.isCallbackConflictsFinish = true;
+        // }
+        // if (!this.isCallbackImportFinish) {
+        //     this.isCallbackImportFinish = true;
+        // }
 
         if (resultObj.InternalID) {
+            this.disableCancelConflictButton = false;
             const title = this.translate.instant(
                 "Import_Export_Success"
             );
@@ -474,7 +477,7 @@ export class ImportAtdComponent implements OnInit {
         this.disableCancelConflictButton = false;
         this.disableCancelWebhooksButton = false;
         this.disableConflictButton = false;
-        this.disableImportButton = true;
+        this.disableImportButton = false;
         this.isCallbackWebhokksFinish = false;
         this.isCallbackConflictsFinish = false;
         this.isCallbackImportFinish = false;
@@ -952,9 +955,6 @@ export class ImportAtdComponent implements OnInit {
     }
 
     loadConflictlist() {
-        console.log(
-            `in loadConflictlist. this.conflictsList.length: ${this.conflictsList.length}`
-        );
         this.validateConflictButtonEnabled();
         this.loadConflictList(this.conflictsList);
     }

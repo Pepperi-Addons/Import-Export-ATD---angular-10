@@ -1,6 +1,6 @@
 {
   "AddonUUID": "e9029d7f-af32-4b0e-a513-8d9ced6f8186",
-  "AddonVersion": "1.1.206",
+  "AddonVersion": "1.1.212",
   "DebugPort": 4400,
   "WebappBaseUrl": "https://app.sandbox.pepperi.com",
   "DefaultEditor": "main",
@@ -40,18 +40,7 @@
     "zh.ngx-lib.json"
   ],
   "PublishConfig": {
-    "Editors": [
-      {
-        "ParentPackageName": "ATD",
-        "PackageName": "export-atd",
-        "Description": "Export ATD"
-      },
-      {
-        "ParentPackageName": "ATD",
-        "PackageName": "import-atd",
-        "Description": "Import ATD"
-      }
-    ],
+    "Editors": [],
     "Dependencies": {
       "adal": "1.0.49",
       "webapp": "16.55.42",
