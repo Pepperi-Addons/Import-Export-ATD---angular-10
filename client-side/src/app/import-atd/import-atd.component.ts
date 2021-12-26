@@ -291,7 +291,9 @@ export class ImportAtdComponent implements OnInit {
             URL: this.referenceMap.Mapping[referenceIndex].Origin.Path,
             Title: this.referenceMap.Mapping[referenceIndex].Origin.Name,
             Hidden: false,
-            Configuration: {
+            Configuration: 
+            this.referenceMap.Mapping[referenceIndex].Origin.Configuration ? this.referenceMap.Mapping[referenceIndex].Origin.Configuration:
+            {
                 ObjectType: "Order",
                 Type: "CustomClientForm",
                 RequiredOperation: "NoOperation",
