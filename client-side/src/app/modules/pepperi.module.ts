@@ -6,12 +6,7 @@ import {
     pepIconSystemBolt,
     pepIconNoImage,
 } from "@pepperi-addons/ngx-lib/icon";
-import {
-    PepNgxLibModule,
-    PepAddonService,
-    PepCustomizationService,
-    PepFileService,
-} from "@pepperi-addons/ngx-lib";
+import { PepNgxLibModule } from "@pepperi-addons/ngx-lib";
 import { PepAttachmentModule } from "@pepperi-addons/ngx-lib/attachment";
 import { PepCheckboxModule } from "@pepperi-addons/ngx-lib/checkbox";
 
@@ -32,46 +27,6 @@ import { PepTextareaModule } from "@pepperi-addons/ngx-lib/textarea";
 import { PepTextboxModule } from "@pepperi-addons/ngx-lib/textbox";
 import { PepListModule } from "@pepperi-addons/ngx-lib/list";
 import { PepTopBarModule } from "@pepperi-addons/ngx-lib/top-bar";
-import { HttpClient } from "@angular/common/http";
-import {
-    TranslateModule,
-    TranslateLoader,
-    TranslateService,
-} from "@ngx-translate/core";
-import { TranslateHttpLoader } from "@ngx-translate/http-loader";
-import { MultiTranslateHttpLoader } from "ngx-translate-multi-http-loader";
-
-export function createTranslateLoader(
-    http: HttpClient,
-    fileService: PepFileService,
-    addonService: PepAddonService
-) {
-    let addonStaticFolder = addonService.getAddonStaticFolder();
-    addonStaticFolder =
-        window.location.href.includes("localhost") ||
-        addonStaticFolder.includes("localhost")
-            ? ""
-            : addonStaticFolder;
-    const translationsPath: string = fileService.getAssetsTranslationsPath();
-    const translationsSuffix: string = fileService.getAssetsTranslationsSuffix();
-
-    return new MultiTranslateHttpLoader(http, [
-        {
-            prefix:
-                addonStaticFolder.length > 0
-                    ? addonStaticFolder
-                    : translationsPath,
-            suffix: translationsSuffix,
-        },
-        {
-            prefix:
-                addonStaticFolder.length > 0
-                    ? addonStaticFolder
-                    : "/assets/i18n/",
-            suffix: ".json",
-        },
-    ]);
-}
 
 const pepperiComponentsModules = [
     PepAttachmentModule,
@@ -103,37 +58,9 @@ const pepperiComponentsModules = [
         CommonModule,
         PepNgxLibModule,
         pepperiComponentsModules,
-        TranslateModule.forRoot({
-            loader: {
-                provide: TranslateLoader,
-                useFactory: createTranslateLoader,
-                deps: [HttpClient, PepFileService, PepAddonService],
-            },
-        }),
     ],
     exports: [PepNgxLibModule, pepperiComponentsModules],
 })
 export class PepUIModule {
-    constructor(
-        translate: TranslateService,
-        private pepperiIconRegistry: PepIconRegistry
-    ) {
-        this.pepperiIconRegistry.registerIcons([
-            pepIconSystemBolt,
-            pepIconNoImage,
-        ]);
-
-        let userLang = "en";
-        translate.setDefaultLang(userLang);
-        userLang = translate.getBrowserLang().split("-")[0]; // use navigator lang if available
-
-        if (location.href.indexOf("userLang=en") > -1) {
-            userLang = "en";
-        }
-
-        // the lang to use, if the lang isn't available, it will use the current loader to get them
-        translate.use(userLang).subscribe((res: any) => {
-            // In here you can put the code you want. At this point the lang will be loaded
-        });
-    }
+    
 }

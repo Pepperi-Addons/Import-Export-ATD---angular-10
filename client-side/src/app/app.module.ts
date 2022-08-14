@@ -1,40 +1,53 @@
-import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
-import { ImportAtdModule } from './import-atd/index';
-import { ExportAtdModule } from './export-atd/index';
+import { DoBootstrap, Injector, NgModule } from "@angular/core";
 import { BrowserModule } from "@angular/platform-browser";
 
-import { NgModule } from "@angular/core";
+import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ImportAtdComponent, ImportAtdModule } from './import-atd/index';
+import { ExportAtdComponent, ExportAtdModule } from './export-atd/index';
 
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
 import { PepUIModule } from "./modules/pepperi.module";
 import { MaterialModule } from "./modules/material.module";
-import { HttpClient } from '@angular/common/http';
-import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { PepAddonService } from '@pepperi-addons/ngx-lib';
+import { config } from './addon.config';
 
-export function createTranslateLoader(http: HttpClient) {
-    return new TranslateHttpLoader(http, 'http://localhost:3010/assets/i18n/', '.json');
-}
 @NgModule({
     declarations: [AppComponent,
     ],
     imports: [
         BrowserModule,
-
         AppRoutingModule,
         ExportAtdModule,
         ImportAtdModule,
         PepUIModule,
         MaterialModule,
         TranslateModule.forRoot({
-            loader: {
+          loader: {
               provide: TranslateLoader,
-              useFactory: (createTranslateLoader),
-              deps: [HttpClient]
-            }
-          })
+              useFactory: (addonService: PepAddonService) => 
+                  PepAddonService.createMultiTranslateLoader(config.AddonUUID, addonService, ['ngx-lib']),
+              deps: [PepAddonService]
+          }
+      }),
     ],
     providers: [TranslateService],
-    bootstrap: [AppComponent],
+    bootstrap: [
+      // AppComponent
+    ],
 })
-export class AppModule {}
+export class AppModule implements DoBootstrap {
+  constructor(
+      private injector: Injector,
+      translate: TranslateService,
+      private pepAddonService: PepAddonService
+  ) {
+      this.pepAddonService.setDefaultTranslateLang(translate);
+  }
+
+  ngDoBootstrap() {
+      this.pepAddonService.defineCustomElement(`import-element-${config.AddonUUID}`, ImportAtdComponent, this.injector);
+      this.pepAddonService.defineCustomElement(`export-element-${config.AddonUUID}`, ExportAtdComponent, this.injector);
+      // this.pepAddonService.defineCustomElement(`settings-element-${config.AddonUUID}`, ExportAtdComponent, this.injector);
+  }
+}

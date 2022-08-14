@@ -5,20 +5,18 @@ import { ImportAtdComponent } from "./import-atd/index";
 import { ExportAtdComponent } from "./export-atd/index";
 
 const routes: Routes = [
-
     {
-    path: 'settings/:addon_uuid',
-
-    children: [
-        {
-            path: 'export-atd',
-            component: ExportAtdComponent
-        },
-        {
-            path: 'import-atd',
-            component: ImportAtdComponent
-        }
-    ]
+        path: ':settingsSectionName/:addon_uuid',
+        children: [
+            {
+                path: 'export-atd',
+                component: ExportAtdComponent
+            },
+            {
+                path: 'import-atd',
+                component: ImportAtdComponent
+            }
+        ]
     },
     {
         path: "**",
@@ -27,7 +25,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-    imports: [RouterModule.forRoot(routes, { relativeLinkResolution: 'legacy' })],
+    imports: [RouterModule.forRoot(routes)],
     exports: [RouterModule],
 })
 export class AppRoutingModule {}
