@@ -1,5 +1,6 @@
 import { DoBootstrap, Injector, NgModule } from "@angular/core";
 import { BrowserModule } from "@angular/platform-browser";
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ImportAtdComponent, ImportAtdModule } from './import-atd/index';
@@ -17,6 +18,7 @@ import { config } from './addon.config';
     ],
     imports: [
         BrowserModule,
+        BrowserAnimationsModule,
         AppRoutingModule,
         ExportAtdModule,
         ImportAtdModule,
