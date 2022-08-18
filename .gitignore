@@ -2,3 +2,5 @@
 /publish/editors
 var_sk
 node_modules
+client-side/.angular/
+publish/
