@@ -376,6 +376,8 @@ export class ImportAtdComponent implements OnInit {
             { URL: url, References: this.referenceMap },
             true);
         const condition = (logRes) => {
+            return logRes && logRes.Status && logRes.Status.Name != "Success" && logRes.Status.Name != "Failure";
+
             return logRes &&
                 logRes.Status &&
                 logRes.Status.Name !== "InProgress" &&
