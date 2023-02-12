@@ -378,11 +378,11 @@ export class ImportAtdComponent implements OnInit {
         const condition = (logRes) => {
             return logRes && logRes.Status && logRes.Status.Name != "Success" && logRes.Status.Name != "Failure";
 
-            return logRes &&
+            /*return logRes &&
                 logRes.Status &&
                 logRes.Status.Name !== "InProgress" &&
                 logRes.Status.Name !== "InRetry" ?
-                false : true;
+                false : true;*/
         };
         this.poll(() => this.appService.getExecutionLog(importTypeResult.ExecutionUUID), condition, 1500)
             .then(logRes => {
