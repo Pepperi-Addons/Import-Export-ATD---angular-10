@@ -1,4 +1,4 @@
-import { Reference } from "./reference";
+import { Reference } from "./Reference";
 
 export interface Mapping {
   Origin: Reference;

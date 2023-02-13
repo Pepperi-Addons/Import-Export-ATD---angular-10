@@ -1,5 +1,5 @@
 import { ConflictStatus } from "./ConflictStatus.enum";
-import { ReferenceType } from "./referenceType";
+import { ReferenceType } from "./ReferenceType";
 import { ResolutionOptionType } from "./ResolutionOption";
 
 export interface Conflict {

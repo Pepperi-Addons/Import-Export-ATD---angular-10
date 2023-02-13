@@ -1,11 +1,10 @@
-import { Owner } from "./owner";
-import { AddonOwner } from "./addonOwner";
+import { AddonOwner } from "./AddonOwner";
 import {
   ATDSettings,
   ApiFieldObject,
   DataView,
 } from "@pepperi-addons/papi-sdk";
-import { Reference } from "./reference";
+import { Reference } from "./Reference";
 
 export interface ActivityTypeDefinition {
   Version?: string;

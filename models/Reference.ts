@@ -1,4 +1,4 @@
-import { ReferenceType } from "./referenceType";
+import { ReferenceType } from "./ReferenceType";
 
 export interface Reference {
   Type: ReferenceType;
