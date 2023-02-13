@@ -1,21 +1,16 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, Type, ViewChild } from "@angular/core";
 import { TranslateService } from "@ngx-translate/core";
 // @ts-ignore
-import { UserService } from "pepperi-user-service";
 import { ImportAtdService } from "./index";
-import { Reference } from "./../../../../models/reference";
+import { Reference } from "./../../../../models/Reference";
 import { Conflict } from "./../../../../models/conflict";
 import { ObjectType } from "./../../../../models/ObjectType.enum";
-import { ConflictStatus } from "../../../../models/ConflictStatus.enum";
 
 import { Guid } from "./../../../../models/guid";
 import { References, Mapping } from "./../../../../models/referencesMap";
 import { __param } from "tslib";
 import { FileStorage } from "@pepperi-addons/papi-sdk";
-import { ReferenceType } from "./../../../../models/referenceType";
 import { Webhook } from "./../../../../models/Webhook";
-import { ResolutionOptionType } from "../../../../models/ResolutionOption";
-import { pairs } from "rxjs";
 import {
     PepAddonService,
     PepCustomizationService,
@@ -109,7 +104,7 @@ export class ImportAtdComponent implements OnInit {
 
     ngOnDestroy() {
         // if (this.reportInterval) {
-        window.clearTimeout();
+        window.clearTimeout(undefined);
         // }
     }
 
@@ -135,7 +130,7 @@ export class ImportAtdComponent implements OnInit {
         for (const conflict of this.conflictsList) {
             await this.handleConflict(conflict, Resolution);
         }
-        if (Resolution && Resolution != {})
+        if (Resolution && Object.keys(Resolution).length != 0)
             this.importService.callToServerAPI(
                 "upsert_to_dynamo",
                 "POST",
@@ -427,7 +422,7 @@ export class ImportAtdComponent implements OnInit {
             const title = this.translate.instant(
                 "Import_Export_Error"
             );
-            window.clearTimeout();
+            window.clearTimeout(undefined);
             this.isCallbackImportFinish = true;
 
             this.importResult = `${title}. Error message: ${resultObj.errorMessage}`;
@@ -663,7 +658,8 @@ export class ImportAtdComponent implements OnInit {
             const value = webhooksFromDynmo?.Value;
             if (value) {
                 const val = value[w.UUID];
-                if (val && val != {}) {
+                if (val)// && val != {}) 
+                {
                     w.Url = val.url ? val.url : w.Url;
                     w.SecretKey = val.secretKey ? val.secretKey : w.SecretKey;
                 }
