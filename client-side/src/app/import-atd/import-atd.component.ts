@@ -3,11 +3,11 @@ import { TranslateService } from "@ngx-translate/core";
 // @ts-ignore
 import { ImportAtdService } from "./index";
 import { Reference } from "./../../../../models/Reference";
-import { Conflict } from "./../../../../models/conflict";
+import { Conflict } from "./../../../../models/Conflict";
 import { ObjectType } from "./../../../../models/ObjectType.enum";
 
-import { Guid } from "./../../../../models/guid";
-import { References, Mapping } from "./../../../../models/referencesMap";
+import { Guid } from "./../../../../models/Guid";
+import { References, Mapping } from "./../../../../models/ReferencesMap";
 import { __param } from "tslib";
 import { FileStorage } from "@pepperi-addons/papi-sdk";
 import { Webhook } from "./../../../../models/Webhook";
