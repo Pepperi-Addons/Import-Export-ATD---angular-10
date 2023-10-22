@@ -1102,7 +1102,7 @@ async function GetReferencesData(service: ImportExportService, subtype: string, 
     callbaks.push("filter");
   }
   if (udtIndex > -1) {
-    promises.push(service.papiClient.metaData.userDefinedTables.iter().toArray());
+    promises.push(service.papiClient.metaData.userDefinedTables.find()); // fix DI-25422 - iter have no meaning on meta_data, if the meta data table (in that case UDT) have more than 100 rows the iter() will get into endless loop, find brings all the data from metadata always, It is different from Data
     callbaks.push("user_defined_table");
   }
   await Promise.all(promises).then((res) => {
